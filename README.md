@@ -1,6 +1,6 @@
 ## Eigen link to clusol
 
-This is an Eigen link to modeified version of lusol (https://github.com/nwh/lusol)
+This is an Eigen link to a modeified version of lusol (https://github.com/nwh/lusol)
 
 ## Install 
    * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
