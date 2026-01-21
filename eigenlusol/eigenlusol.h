@@ -43,12 +43,7 @@ namespace cpplusol {
         // so -1 indexing if coming from lusol
 
         public:
-            eigenlusol(options _opt = cpplusol::options()) :
-                opt(_opt)
-            {
-                // if (!hp) { cout << "eigenlusol: no workspace available" << endl; throw; }
-                allocate(); // {'TPP','TRP','TCP','TSP', 'TBP}));
-            }
+            eigenlusol(options _opt = cpplusol::options());
 
             void reset();
 
@@ -66,7 +61,7 @@ namespace cpplusol {
 
             // computes the (implicit: construct false, explicit: construct true) NS of the matrix A
             // Z = P' * inv(L') * [0; I] with A' = P' L U Q'
-            void computeNS(const mat& A, shared_ptr<mat> Zio=NULL, bool construct=false);
+            void computeNS(const mat& A, mat* Zio=NULL, bool construct=false);
             // apply NS on the right of matrix B -> BZ (not in place)
             mat applyNSOnTheRight(const mat& B);
             void applyNSOnTheRight(mat& B, vector<mat>& _storage);
@@ -116,7 +111,7 @@ namespace cpplusol {
             double getUcond();
             int lenRow(int idx);
 
-            void constructZ(shared_ptr<mat> Zio = NULL);
+            void constructZ(mat* Zio = NULL);
 
             void computeInvLP();
 

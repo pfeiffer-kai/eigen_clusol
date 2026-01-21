@@ -1,0 +1,85 @@
+[1mdiff --git a/CMakeLists.txt b/CMakeLists.txt[m
+[1mindex 4e7d0ef..af7e6fb 100644[m
+[1m--- a/CMakeLists.txt[m
+[1m+++ b/CMakeLists.txt[m
+[36m@@ -5,7 +5,7 @@[m
+ # This source code is licensed under the BSD 3-Clause License found in the[m
+ # LICENSE file in the root directory of this source tree.[m
+ [m
+[31m-cmake_minimum_required(VERSION 3.4)[m
+[32m+[m[32mcmake_minimum_required(VERSION 3.28)[m
+ [m
+ project(EIGENLUSOL)[m
+ [m
+[1mdiff --git a/eigenlusol/eigenlusol.cpp b/eigenlusol/eigenlusol.cpp[m
+[1mindex b99d8dd..447c0fe 100644[m
+[1m--- a/eigenlusol/eigenlusol.cpp[m
+[1m+++ b/eigenlusol/eigenlusol.cpp[m
+[36m@@ -9,6 +9,13 @@[m
+ [m
+ namespace cpplusol {[m
+ [m
+[32m+[m[32m    eigenlusol::eigenlusol(options _opt) :[m
+[32m+[m[32m        opt(_opt)[m
+[32m+[m[32m    {[m
+[32m+[m[32m        // if (!hp) { cout << "eigenlusol: no workspace available" << endl; throw; }[m
+[32m+[m[32m        allocate(); // {'TPP','TRP','TCP','TSP', 'TBP}));[m
+[32m+[m[32m    }[m
+[32m+[m
+     void eigenlusol::reset()[m
+     {[m
+ #if TIMEMEASUREMENTS[m
+[36m@@ -312,7 +319,7 @@[m [mnamespace cpplusol {[m
+         return nrCols;[m
+     }[m
+ [m
+[31m-    void eigenlusol::computeNS(const mat& A, shared_ptr<mat> Zio, bool construct)[m
+[32m+[m[32m    void eigenlusol::computeNS(const mat& A, mat* Zio, bool construct)[m
+     {[m
+         reset();[m
+         if (info)[m
+[36m@@ -1236,7 +1243,7 @@[m [mnamespace cpplusol {[m
+         return lennnz;[m
+     }[m
+ [m
+[31m-    void eigenlusol::constructZ(shared_ptr<mat> Zio)[m
+[32m+[m[32m    void eigenlusol::constructZ(mat* Zio)[m
+     {[m
+         if (!info)[m
+         {[m
+[1mdiff --git a/eigenlusol/eigenlusol.h b/eigenlusol/eigenlusol.h[m
+[1mindex 7844e4f..4eec698 100644[m
+[1m--- a/eigenlusol/eigenlusol.h[m
+[1m+++ b/eigenlusol/eigenlusol.h[m
+[36m@@ -43,12 +43,7 @@[m [mnamespace cpplusol {[m
+         // so -1 indexing if coming from lusol[m
+ [m
+         public:[m
+[31m-            eigenlusol(options _opt = cpplusol::options()) :[m
+[31m-                opt(_opt)[m
+[31m-            {[m
+[31m-                // if (!hp) { cout << "eigenlusol: no workspace available" << endl; throw; }[m
+[31m-                allocate(); // {'TPP','TRP','TCP','TSP', 'TBP}));[m
+[31m-            }[m
+[32m+[m[32m            eigenlusol(options _opt = cpplusol::options());[m
+ [m
+             void reset();[m
+ [m
+[36m@@ -66,7 +61,7 @@[m [mnamespace cpplusol {[m
+ [m
+             // computes the (implicit: construct false, explicit: construct true) NS of the matrix A[m
+             // Z = P' * inv(L') * [0; I] with A' = P' L U Q'[m
+[31m-            void computeNS(const mat& A, shared_ptr<mat> Zio=NULL, bool construct=false);[m
+[32m+[m[32m            void computeNS(const mat& A, mat* Zio=NULL, bool construct=false);[m
+             // apply NS on the right of matrix B -> BZ (not in place)[m
+             mat applyNSOnTheRight(const mat& B);[m
+             void applyNSOnTheRight(mat& B, vector<mat>& _storage);[m
+[36m@@ -116,7 +111,7 @@[m [mnamespace cpplusol {[m
+             double getUcond();[m
+             int lenRow(int idx);[m
+ [m
+[31m-            void constructZ(shared_ptr<mat> Zio = NULL);[m
+[32m+[m[32m            void constructZ(mat* Zio = NULL);[m
+ [m
+             void computeInvLP();[m
+ [m

@@ -9,6 +9,13 @@
 
 namespace cpplusol {
 
+    eigenlusol::eigenlusol(options _opt) :
+        opt(_opt)
+    {
+        // if (!hp) { cout << "eigenlusol: no workspace available" << endl; throw; }
+        allocate(); // {'TPP','TRP','TCP','TSP', 'TBP}));
+    }
+
     void eigenlusol::reset()
     {
 #if TIMEMEASUREMENTS
@@ -312,7 +319,7 @@ namespace cpplusol {
         return nrCols;
     }
 
-    void eigenlusol::computeNS(const mat& A, shared_ptr<mat> Zio, bool construct)
+    void eigenlusol::computeNS(const mat& A, mat* Zio, bool construct)
     {
         reset();
         if (info)
@@ -1236,7 +1243,7 @@ namespace cpplusol {
         return lennnz;
     }
 
-    void eigenlusol::constructZ(shared_ptr<mat> Zio)
+    void eigenlusol::constructZ(mat* Zio)
     {
         if (!info)
         {
