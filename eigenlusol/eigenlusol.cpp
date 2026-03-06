@@ -16,6 +16,40 @@ namespace cpplusol {
         allocate(); // {'TPP','TRP','TCP','TSP', 'TBP}));
     }
 
+    eigenlusol::~eigenlusol()
+    {
+        delete[] m;
+        delete[] n;
+        delete[] nelem;
+        delete[] lena;
+        delete[] luparm;
+        delete[] parmlu;
+        delete[] a;
+        delete[] indc;
+        delete[] indr;
+        delete[] p;
+        delete[] q;
+        delete[] lenc;
+        delete[] lenr;
+        delete[] locc;
+        delete[] locr;
+        delete[] iploc;
+        delete[] iqloc;
+        delete[] ipinv; // inverse of p
+        delete[] iqinv; // inverse of q
+        delete[] w;
+        delete[] inform;
+
+        delete[] v; // in case of addcol
+        delete[] vidx; // in case of sparse addcol
+
+        delete[] n1;
+        delete[] n2;
+        delete[] np;
+
+        delete info;
+    }
+
     void eigenlusol::reset()
     {
 #if TIMEMEASUREMENTS
@@ -82,15 +116,16 @@ namespace cpplusol {
 #if TIMEMEASUREMENTS
         cpplusol::timer t1;
 #endif
-        try {
-        int64_t* n1 = new int64_t[1]; n1[0] = -1;
-        int64_t* n2 = new int64_t[1]; n2[0] = -1;
-        int64_t* np = new int64_t[1]; np[0] = 0;
+        // try
+        {
+            n1[0] = -1;
+            n2[0] = -1;
+            np[0] = 0;
             clu1fac( m, n, nelem, lena, luparm, parmlu, a, indc, indr, p, q, lenc, lenr, locc, locr, iploc, iqloc, ipinv, iqinv, w, inform, n1,n2,np); 
         }
-        catch (...) {
-            cout << "clu1fac failed" << endl;
-        }
+        // catch (...) {
+        //     cout << "clu1fac failed" << endl;
+        // }
 #if TIMEMEASUREMENTS
         t1.stopTime("eigenlusol::factorize");
         { t1.stopTime(); times.push_back(cpplusol::time(t1.time, "eigenlusol::factorize: clu1fac")); }
@@ -154,9 +189,9 @@ namespace cpplusol {
 #endif
         *m = A.rows();
         *n = A.cols();
-        int64_t* n1 = new int64_t[1]; n1[0] = -1;
-        int64_t* n2 = new int64_t[1]; n2[0] = -1;
-        int64_t* np = new int64_t[1]; np[0] = *n;
+        n1[0] = -1;
+        n2[0] = -1;
+        np[0] = *n;
         vL.head(*m).setConstant(-1);
         int ctrnnz = 0;
         for (int c = j; c < j + rg; c++)
@@ -1347,8 +1382,7 @@ namespace cpplusol {
 
     void eigenlusol::assignInfo()
     {
-        if (!info)
-            info = new lusolinfo;
+        if (!info) info = new lusolinfo;
         info->inform = luparm[9];
         info->nsing = luparm[10];
         info->jsing = luparm[11];
@@ -1431,8 +1465,13 @@ namespace cpplusol {
         }
 
         a = new double[*lena]; memset(a, 0, *lena*sizeof(double));
-        indc = new int64_t[*lena]; memset(indc, 0, *lena*sizeof(int64_t));
-        indr = new int64_t[*lena]; memset(indr, 0, *lena*sizeof(int64_t));
+        std::cout << "EIGENLUSOL HANS" << endl;
+        indc = new int64_t[*lena];
+        memset(indc, 0, *lena*sizeof(int64_t));
+        std::cout << "EIGENLUSOL HANS " << *lena << endl;
+        indr = new int64_t[*lena];
+        memset(indr, 0, *lena*sizeof(int64_t));
+        std::cout << "EIGENLUSOL HANS" << endl;
 
         luparm[1] = -1;
         luparm[2] = opt.maxcol;
@@ -1466,8 +1505,12 @@ namespace cpplusol {
         vidx = new int64_t[maxmn]; memset(vidx, 0, sizeof(double) * maxmn);
         vL = veci::Constant(maxmn, -1);
 
-        th = cpplusol::tripletHandler(opt.maxmn);
-        th2 = cpplusol::tripletHandler(opt.maxmn);
+        th = tripletHandler(opt.maxmn);
+        th2 = tripletHandler(opt.maxmn);
+
+        n1 = new int64_t[1000];
+        n2 = new int64_t[1000];
+        np = new int64_t[1000];
     }
 
     void eigenlusol::allocate(const mat& A)

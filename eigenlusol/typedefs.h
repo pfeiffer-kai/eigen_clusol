@@ -7,6 +7,7 @@
 #include <eigen3/Eigen/Sparse>
 #include <eigen3/Eigen/Jacobi>
 #include <eigen3/Eigen/Eigenvalues>
+#include <matrixEigenWrapper/matrixEigenWrapper/matrix.h>
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -30,6 +31,8 @@ using std::max;
 using std::abs;
 using std::sort;
 using Eigen::MatrixXd;
+using matrixEigenWrapper::tripletHandler;
+
 
 typedef Eigen::SparseMatrix<double, Eigen::ColMajor> mat;
 typedef Eigen::Triplet<double> triplet;
@@ -45,102 +48,102 @@ namespace cpplusol
     enum verboseLevel {NONE = 0, CONV, VAR, MAT};
     enum TP {TPP = 0, TRP, TCP, TSP, TCPNM};
 
-    struct tripletHandler
-    {
-        public:
-            tripletHandler() { }
-            tripletHandler(int d) { tl.resize(d); }
-            void reset() { tlctr = 0; }
-            int& tripletCtr() { return tlctr; }
-            inline tripletList& tripletL() { return tl; }
+    // struct tripletHandler
+    // {
+    //     public:
+    //         tripletHandler() { }
+    //         tripletHandler(int d) { tl.resize(d); }
+    //         void reset() { tlctr = 0; }
+    //         int& tripletCtr() { return tlctr; }
+    //         inline tripletList& tripletL() { return tl; }
 
-            void setTriplet(const int r, const int c, const double val)
-            {
-                tl[tlctr] = triplet(r, c, val);
-                tlctr++;
-            }
+    //         void setTriplet(const int r, const int c, const double val)
+    //         {
+    //             tl[tlctr] = triplet(r, c, val);
+    //             tlctr++;
+    //         }
 
-            void getTriplets(const mat& A, int rowOffset = 0, int colOffset = 0)
-            {
-                for (int k=0; k < A.outerSize(); ++k)
-                {
-                    for (mat::InnerIterator it(A,k); it; ++it)
-                    {
-                        tl[tlctr] = triplet(it.row() + rowOffset, it.col() + colOffset, it.value());
-                        tlctr++;
-                    }
-                }
-            }
+    //         void getTriplets(const mat& A, int rowOffset = 0, int colOffset = 0)
+    //         {
+    //             for (int k=0; k < A.outerSize(); ++k)
+    //             {
+    //                 for (mat::InnerIterator it(A,k); it; ++it)
+    //                 {
+    //                     tl[tlctr] = triplet(it.row() + rowOffset, it.col() + colOffset, it.value());
+    //                     tlctr++;
+    //                 }
+    //             }
+    //         }
 
-            void getTripletsRows(const mat& A, vector<int> rowidx, int rowOffset = 0, int colOffset = 0)
-            {
-                // getting triplets from rows is inefficient due to column major ordering (row major column ordering would lead to deprecation of other functions, for example solve in place)
-                // binary idx search over rowidx is cheaper than all matrix entries
-                for (int k=0; k < A.outerSize(); ++k)
-                {
-                    for (mat::InnerIterator it(A,k); it; ++it)
-                    {
-                        std::vector<int>::iterator itr = std::find(rowidx.begin(), rowidx.end(), it.row());
-                        if (itr != rowidx.cend())
-                        {
-                            tl[tlctr] = triplet(rowOffset + std::distance(rowidx.begin(), itr), it.col() + colOffset, it.value());
-                            tlctr++;
-                        }
-                    }
-                }
-            }
+    //         void getTripletsRows(const mat& A, vector<int> rowidx, int rowOffset = 0, int colOffset = 0)
+    //         {
+    //             // getting triplets from rows is inefficient due to column major ordering (row major column ordering would lead to deprecation of other functions, for example solve in place)
+    //             // binary idx search over rowidx is cheaper than all matrix entries
+    //             for (int k=0; k < A.outerSize(); ++k)
+    //             {
+    //                 for (mat::InnerIterator it(A,k); it; ++it)
+    //                 {
+    //                     std::vector<int>::iterator itr = std::find(rowidx.begin(), rowidx.end(), it.row());
+    //                     if (itr != rowidx.cend())
+    //                     {
+    //                         tl[tlctr] = triplet(rowOffset + std::distance(rowidx.begin(), itr), it.col() + colOffset, it.value());
+    //                         tlctr++;
+    //                     }
+    //                 }
+    //             }
+    //         }
 
-            void getLC(const mat& A, veci& lc)
-            {
-                for (int k=0; k < A.outerSize(); ++k)
-                {
-                    for (mat::InnerIterator it(A,k); it; ++it)
-                    {
-                        if (lc(it.row()) < it.col()) lc(it.row()) = it.col();
-                    }
-                }
-            }
+    //         void getLC(const mat& A, veci& lc)
+    //         {
+    //             for (int k=0; k < A.outerSize(); ++k)
+    //             {
+    //                 for (mat::InnerIterator it(A,k); it; ++it)
+    //                 {
+    //                     if (lc(it.row()) < it.col()) lc(it.row()) = it.col();
+    //                 }
+    //             }
+    //         }
 
-            void getTripletsVec(vec& a, int rg, int rowOffset = 0, int colOffset = 0, string type = "col")
-            {
-                for (int k=0; k < rg; ++k)
-                {
-                    if (abs(a[k]) > 1e-31) 
-                    {
-                        if (type == "col")
-                        {
-                            tl[tlctr] = triplet(rowOffset + k, colOffset, a[k]);
-                        }
-                        else
-                        {
-                            tl[tlctr] = triplet(rowOffset, colOffset + k, a[k]);
-                        }
-                        tlctr++;
-                    }
-                }
-            }
+    //         void getTripletsVec(vec& a, int rg, int rowOffset = 0, int colOffset = 0, string type = "col")
+    //         {
+    //             for (int k=0; k < rg; ++k)
+    //             {
+    //                 if (abs(a[k]) > 1e-31) 
+    //                 {
+    //                     if (type == "col")
+    //                     {
+    //                         tl[tlctr] = triplet(rowOffset + k, colOffset, a[k]);
+    //                     }
+    //                     else
+    //                     {
+    //                         tl[tlctr] = triplet(rowOffset, colOffset + k, a[k]);
+    //                     }
+    //                     tlctr++;
+    //                 }
+    //             }
+    //         }
 
-            void setFromTriplets(mat& A)
-            {
-                // cout << "Asize " << A.rows() << " x " << A.cols() << endl;
-                // print();
-                A.setFromTriplets(tripletL().begin(), tripletL().begin() + tripletCtr());
-            }
+    //         void setFromTriplets(mat& A)
+    //         {
+    //             // cout << "Asize " << A.rows() << " x " << A.cols() << endl;
+    //             // print();
+    //             A.setFromTriplets(tripletL().begin(), tripletL().begin() + tripletCtr());
+    //         }
 
-            void print()
-            {
-                cout << "DATA::PRINTTRIPLETL: TripletList with counter " << tlctr << " and size " << tl.size() << endl;
-                for (int i = 0; i < tlctr; i++)
-                {
-                    triplet& t = tl[i];
-                    cout << "row " << t.row() << " col " << t.col() << " val " << t.value() << endl;
-                }
-            }
+    //         void print()
+    //         {
+    //             cout << "DATA::PRINTTRIPLETL: TripletList with counter " << tlctr << " and size " << tl.size() << endl;
+    //             for (int i = 0; i < tlctr; i++)
+    //             {
+    //                 triplet& t = tl[i];
+    //                 cout << "row " << t.row() << " col " << t.col() << " val " << t.value() << endl;
+    //             }
+    //         }
 
-        private:
-            int tlctr = 0;
-            tripletList tl;
-    };
+    //     private:
+    //         int tlctr = 0;
+    //         tripletList tl;
+    // };
 
     class timer
     {

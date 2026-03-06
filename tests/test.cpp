@@ -66,7 +66,7 @@ Eigen::SparseMatrix<double> getRandomSpMat(size_t rows, size_t cols, double p) {
 
 int main()
 {
-    eigenlusol * lusol;
+    eigenlusol lusol;
     std::vector<triplet> tripletList;
 
     // tripletList.clear();
@@ -145,33 +145,31 @@ int main()
     // throw;
     // lusol = new eigenlusol;
 
-    // lusol->factorize(A);
+    // lusol.factorize(A);
 
-    // SparseMatrix<double> out = (lusol->P().transpose() * lusol->L() * lusol->U() * lusol->Q().transpose());
+    // SparseMatrix<double> out = (lusol.P().transpose() * lusol.L() * lusol.U() * lusol.Q().transpose());
 
-    // cout << "P\n" << lusol->P() << endl;
-    // cout << "L\n" << lusol->L() << endl;
-    // cout << "U\n" << lusol->U() << endl;
-    // cout << "Q\n" << lusol->Q() << endl;
+    // cout << "P\n" << lusol.P() << endl;
+    // cout << "L\n" << lusol.L() << endl;
+    // cout << "U\n" << lusol.U() << endl;
+    // cout << "Q\n" << lusol.Q() << endl;
     // cout << "A - L*U\n" << A - out << endl;
 
     // throw;
 
-    lusol = new eigenlusol();
+    lusol.computeNS(A, NULL, false);
+    cout << "L\n" << (matd)lusol.L() << endl;
+    cout << "U\n" << (matd)lusol.U() << endl;
 
-    lusol->computeNS(A, NULL, false);
-    cout << "L\n" << (matd)lusol->L() << endl;
-    cout << "U\n" << (matd)lusol->U() << endl;
-
-    SparseMatrix<double> outAt = lusol->P().transpose() * lusol->L() * lusol->U() * lusol->Q().transpose();
+    SparseMatrix<double> outAt = lusol.P().transpose() * lusol.L() * lusol.U() * lusol.Q().transpose();
     cout << "outAt\n" << (matd)outAt << endl;
     mat AT = A;
     cout << "A - PLUQ " << matd(A - outAt).norm() << endl;
     mat A_ = A;
-    cout << "Z\n" << (matd)lusol->Z() << endl;
-    cout << "AZ\n" << (matd)lusol->applyNSOnTheRight(A_) << endl;
-    cout << "A * Z\n" << (matd)(A * lusol->Z()) << endl;;
-    cout << "A * Z " << (A * lusol->Z()).norm() << endl;;
+    cout << "Z\n" << (matd)lusol.Z() << endl;
+    cout << "AZ\n" << (matd)lusol.applyNSOnTheRight(A_) << endl;
+    cout << "A * Z\n" << (matd)(A * lusol.Z()) << endl;;
+    cout << "A * Z " << (A * lusol.Z()).norm() << endl;;
 
     // tripletList.clear();
     // tripletList.reserve(6);
@@ -184,6 +182,6 @@ int main()
     // SparseMatrix<double> B(3, 4);
     // B.setFromTriplets(tripletList.begin(), tripletList.end());
 
-    // cout << "BZ\n" << (matd)lusol->applyNSOnTheRight(B) << endl;
+    // cout << "BZ\n" << (matd)lusol.applyNSOnTheRight(B) << endl;
 }
 

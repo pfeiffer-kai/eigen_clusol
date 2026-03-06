@@ -44,6 +44,7 @@ namespace cpplusol {
 
         public:
             eigenlusol(options _opt = cpplusol::options());
+            ~eigenlusol();
 
             void reset();
 
@@ -190,14 +191,15 @@ namespace cpplusol {
             unique_ptr<mat> _invLP = NULL; // inv(L) * P
             unique_ptr<mat> _QinvUinvLP = NULL; // inverse of _A: Q inv(U) inv(L) P
 
-            cpplusol::tripletHandler th, th2;
+            tripletHandler th, th2;
 
             // problem and solver variables
+            int maxmn;
+
             int64_t* m;
             int64_t* n;
             int64_t* nelem;
             int64_t* lena;
-            int maxmn;
             int64_t* luparm;
             double* parmlu;
             double* a;
@@ -219,6 +221,9 @@ namespace cpplusol {
             double* v; // in case of addcol
             int64_t* vidx; // in case of sparse addcol
 
+            int64_t* n1;
+            int64_t* n2;
+            int64_t* np;
             // vL[r] contains the position of the first triplet of L corresponding to row r
             veci vL;
 

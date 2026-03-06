@@ -19,7 +19,7 @@ namespace cpplusol
         // 1: Q [-invU1 U2 \\ I], based on LU decomposition of A
         int nstype = 1;
 
-        int asize = 1e7; // 10000
+        int asize = 1e6; // 10000
         int maxm = 1e7;
         int maxn = 1e7;
         int maxmn = 1e7;

@@ -17,8 +17,13 @@ option(COMPILE_TESTS "compile the tests" OFF)
 option(TIMEMEASUREMENTS "compile the tests" OFF)
 
 add_compile_options(
-  -O3 -g -Wall -Wpedantic -fPIC -std=c++14 -Wno-terminate
-  )
+    # -O3 -g -Wall -Wpedantic -fPIC -std=c++14 -Wno-terminate -Werror=return-type
+    -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -g -O0
+)
+add_link_options(-fsanitize=address,undefined)
+set(ENV{ASAN_OPTIONS} "halt_in_error=1")
+set(ENV{LSAN_OPTIONS} "halt_in_error=1")
+
 
 ################################################################################
 if(SPARSE)
