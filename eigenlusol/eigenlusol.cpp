@@ -48,6 +48,7 @@ namespace cpplusol {
         delete[] np;
 
         delete info;
+        info = NULL;
     }
 
     void eigenlusol::reset()
@@ -290,7 +291,7 @@ namespace cpplusol {
                     a[ctrnnz] = it.value();
                     indc[ctrnnz] = it.row() + 1;   // row index
                     indr[ctrnnz] = it.col() + 1;   // col index (here it is equal to k)
-                    // A_bin.coeffRef(it.row(), it.col()) = it.value();
+                                                   // A_bin.coeffRef(it.row(), it.col()) = it.value();
                     ctrnnz++;
                 }
                 nrCols++;
@@ -394,13 +395,13 @@ namespace cpplusol {
                 {
                     computeInvLP();
                 }
-    
+
                 // apply inv(L') on the right of B
                 // cout << "L\n" << *_L << endl;
                 // cout << "BT\n" << BT << endl;
-    #if TIMEMEASUREMENTS
+#if TIMEMEASUREMENTS
                 cpplusol::timer t1 = cpplusol::timer();
-    #endif
+#endif
                 // _invLP->transpose().applyThisOnTheRight(B);
                 mat out;
                 // cout << "B\n" << (MatrixXd)B << endl;
@@ -411,9 +412,9 @@ namespace cpplusol {
                 {
                     out = mat(B.rows(), 0);
                 }
-    #if TIMEMEASUREMENTS
+#if TIMEMEASUREMENTS
                 { t1.stopTime(); times.push_back(cpplusol::time(t1.time, "lusol:applyNSontheRight:invLBT")); }
-    #endif
+#endif
                 return out;
             }
             else
@@ -457,10 +458,11 @@ namespace cpplusol {
             //     cout << "Z: Q  invU1 [U2//I]\n" << matd(Q() * Zhard) << endl;
             // }
             // th.reset();
-             
+
             // return B * Zhard;
             return B * Z();
         }
+        return B;
     }
 
     void eigenlusol::applyNSOnTheRight(mat& B, vector<mat>& _storage)
@@ -554,6 +556,7 @@ namespace cpplusol {
         // for i < B.rows()
         //     v = B.row(i)
         //     clu6sol( m, n, v, w, lena, luparm, parmlu, a, indc, indr, p, q, lenc, lenr, locc, locr, inform); 
+        return B;
     }
 
     vec eigenlusol::applyNSOnTheLeft(const vec& b)
@@ -627,11 +630,12 @@ namespace cpplusol {
                 cout << "Z: Q  invU1 [U2//I]\n" << matd(Q() * Zhard) << endl;
             }
             th.reset();
-             
+
             // return Zhard * b;
             cout << "left z\n" << (matd)Z() << endl;
             return Zhard * b;
         }
+        return *_Z;
     }
 
     void eigenlusol::solveInPlace(mat& B)
@@ -699,13 +703,13 @@ namespace cpplusol {
         // cout << "info->nrank " << info->nrank << endl;
         // cout << "U().topLeftCorner(info->nrank,info->nrank)\n" << (MatrixXd)U().topLeftCorner(info->nrank,info->nrank) << endl;
         U().topLeftCorner(info->nrank,info->nrank).triangularView<Eigen::Upper>().solveInPlace(tmp); // cant pass segment here, eigen complains, need tmp's
-        // cout << "tmp " << tmp.transpose() << endl;
+                                                                                                     // cout << "tmp " << tmp.transpose() << endl;
         U().topLeftCorner(info->nrank,info->nrank).triangularView<Eigen::Lower>().transpose().solveInPlace(tmp);
         // cout << "tmp " << tmp.transpose() << endl;
         tmp0.head(info->nrank) = tmp.head(info->nrank);
         // cout << "tmp0 " << tmp0.transpose() << endl;
         L().triangularView<Eigen::Lower>().transpose().solveInPlace(tmp0); // cant pass segment here, eigen complains, need tmp's
-        // cout << "tmp0 " << tmp0.transpose() << endl;
+                                                                           // cout << "tmp0 " << tmp0.transpose() << endl;
         P().transpose().applyThisOnTheLeft(tmp0);
         // cout << "tmp0 " << tmp0.transpose() << endl;
         return tmp0;
@@ -841,7 +845,7 @@ namespace cpplusol {
         // cout << "U\n" << *_U << endl;
         return true;
     }
-    
+
     void eigenlusol::updateInvpq()
     {
         for (int i = 0; i < *m; i++) ipinv[p[i]-1] = i + 1;
@@ -946,8 +950,8 @@ namespace cpplusol {
                     {
                         if (iqinv[indr[loc-1+j]-1]-1 == i)
                         {
-                        //     // if (abs(a[loc-1+j]) < 1e-7)
-                        //     //     a[loc-1+j] = 1e-7; // can also be achieved by Utol (?)
+                            //     // if (abs(a[loc-1+j]) < 1e-7)
+                            //     //     a[loc-1+j] = 1e-7; // can also be achieved by Utol (?)
                             if (opt.verbose >= CONV) cout << abs(a[loc-1+j]) << " ";
                             if (ipinv[piv-1]-1 != iqinv[indr[loc-1+j]-1]-1)
                             {
@@ -1289,7 +1293,7 @@ namespace cpplusol {
         cpplusol::timer t1;
 #endif
         // FIXME: there is a bug here (ns test fails for large problems for either type 1 and 2)
-        
+
         if (opt.nstype == 0)
         {
             // type 2
@@ -1465,13 +1469,8 @@ namespace cpplusol {
         }
 
         a = new double[*lena]; memset(a, 0, *lena*sizeof(double));
-        std::cout << "EIGENLUSOL HANS" << endl;
-        indc = new int64_t[*lena];
-        memset(indc, 0, *lena*sizeof(int64_t));
-        std::cout << "EIGENLUSOL HANS " << *lena << endl;
-        indr = new int64_t[*lena];
-        memset(indr, 0, *lena*sizeof(int64_t));
-        std::cout << "EIGENLUSOL HANS" << endl;
+        indc = new int64_t[*lena]; memset(indc, 0, *lena*sizeof(int64_t));
+        indr = new int64_t[*lena]; memset(indr, 0, *lena*sizeof(int64_t));
 
         luparm[1] = -1;
         luparm[2] = opt.maxcol;
