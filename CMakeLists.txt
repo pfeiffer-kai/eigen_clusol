@@ -15,13 +15,16 @@ set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ version selection")
 option(SAFEGUARD "Enable safeguarding functions" OFF)
 option(COMPILE_TESTS "compile the tests" OFF)
 option(TIMEMEASUREMENTS "compile the tests" OFF)
+option(SANITIZE "Sanitize" OFF)
 
-add_compile_options(
-    -O3 -g -Wall -Wpedantic -fPIC -std=c++14 -Wno-terminate -Werror=return-type
-    # -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -g -O0
-)
-#add_link_options(-fsanitize=address,undefined)
-
+if(SANITIZE)
+    add_compile_options(
+        -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -g -O0
+    )
+    add_link_options(-fsanitize=address,undefined)
+else()
+    add_compile_options(-O3 -g -Wall -Wpedantic -fPIC -std=c++14 -Wno-terminate -Wreturn-type)
+endif()
 
 ################################################################################
 if(SPARSE)
