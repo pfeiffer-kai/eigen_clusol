@@ -7,6 +7,7 @@
 #include <eigen3/Eigen/Sparse>
 #include <eigen3/Eigen/Jacobi>
 #include <eigen3/Eigen/Eigenvalues>
+// #include <matrixEigenWrapper/matrixEigenWrapper/matrix.h>
 #include <matrixEigenWrapper/matrixEigenWrapper/matrixBase.h>
 #include <iostream>
 #include <vector>
